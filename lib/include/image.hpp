@@ -28,7 +28,10 @@ private:
 
     int index(const int x, const int y, const int c = 0) const
     {
-        return y * stride + x;
+        assert(x >= 0 && x < width);
+        assert(y >= 0 && y < height);
+        assert(c >= 0 && c < Channels());
+        return y * stride + x * Channels() + c;
     }
 
     void Allocate(int _width, int _height)
@@ -55,14 +58,41 @@ public:
     Image(const Image&) = delete;
     Image& operator=(const Image&) = delete;
 
-    T GetPixel(const int x, const int y) const
+    Image(Image&& other) noexcept
+        : width(other.width), height(other.height),
+          stride(other.stride), data(other.data)
     {
-        return data[index(x, y)];
+        other.width = 0;
+        other.height = 0;
+        other.stride = 0;
+        other.data = nullptr;
     }
 
-    void SetPixel(const int x, const int y, const T& value)
+    Image& operator=(Image&& other) noexcept
     {
-        data[index(x, y)] = value;
+        if (this != &other)
+        {
+            delete[] data;
+            width = other.width;
+            height = other.height;
+            stride = other.stride;
+            data = other.data;
+            other.width = 0;
+            other.height = 0;
+            other.stride = 0;
+            other.data = nullptr;
+        }
+        return *this;
+    }
+
+    T GetPixel(const int x, const int y, const int c = 0) const
+    {
+        return data[index(x, y, c)];
+    }
+
+    void SetPixel(const int x, const int y, const T& value, const int c = 0)
+    {
+        data[index(x, y, c)] = value;
     }
 
     T* GetPtr(const int x, const int y)

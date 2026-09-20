@@ -139,7 +139,10 @@ void Image<T, Type>::Read(const char* path)
     }
     else
     {
-        SkipWhitespaceAndComments(file);
+        // Binary payload starts after exactly one whitespace separator
+        // (PGM/PPM spec). Do not skip more: leading pixel bytes may
+        // themselves be whitespace values.
+        fgetc(file);
         const size_t byte_count = static_cast<size_t>(stride * height) * sizeof(T);
         if (fread(data, 1, byte_count, file) != byte_count)
         {
