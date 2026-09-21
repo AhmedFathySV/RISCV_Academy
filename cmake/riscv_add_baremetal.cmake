@@ -71,6 +71,7 @@ target_link_libraries(riscv_baremetal_runtime INTERFACE
   "-lgcc")
 target_link_options(riscv_baremetal_runtime INTERFACE
   "-nostdlib" "-nostartfiles"
+  "-Wl,--build-id=none"
   "-T" "${RISCV_LINKER_SCRIPT}"
   "-L" "${NEXUS_AM_HOME}/am/src/nemu/ldscript"
   "-Wl,--gc-sections")
