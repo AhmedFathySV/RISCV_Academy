@@ -128,6 +128,7 @@ add_subdirectory(lib)
 enable_testing()
 add_subdirectory(test)
 add_subdirectory(benchmark)
+add_subdirectory(example)
 
 message(STATUS "")
 message(STATUS "RISC-V-CV configuration:")
