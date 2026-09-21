@@ -16,9 +16,9 @@ static void add_loop(const uint8_t* in0,
         const uint8_t* row1 = &in1[y * width];
         uint8_t* row_out = &out[y * width];
 
-        for (size_t x = 0, length = width; length > 0; length -= vl, x += vl)
+        for (size_t x = 0; x < width; x += vl)
         {
-            vl = __riscv_vsetvl_e8m8(length);
+            vl = __riscv_vsetvl_e8m8(width - x);
 
             const vuint8m8_t a = __riscv_vle8_v_u8m8(&row0[x], vl);
             const vuint8m8_t b = __riscv_vle8_v_u8m8(&row1[x], vl);
