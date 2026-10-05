@@ -1,31 +1,25 @@
-cmake_minimum_required(VERSION 3.22)
+cmake_minimum_required(VERSION 3.16)
+project(RISCV_RGB2Gray_Benchmark C CXX ASM)
 
-# Benchmarks build as bare-metal images for gem5 and static Linux ELFs for
-# qemu-user. Each .cpp under source/ becomes one pair (e.g. Add_benchmark ->
-# Add_benchmark_gem5 + Add_benchmark_qemu) with matching run_* targets.
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-file(GLOB_RECURSE BENCHMARK_SOURCES source/*.cpp)
+set(GEM5_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../../../gem5" CACHE PATH "Path to gem5")
 
-foreach(BENCHMARK_SOURCE ${BENCHMARK_SOURCES})
-    get_filename_component(BENCHMARK_NAME ${BENCHMARK_SOURCE} NAME_WE)
+set(SCALAR_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../test/reference")
+set(VECTOR_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../lib")
 
-    riscv_add_baremetal_image(${BENCHMARK_SOURCE})
-    target_link_libraries(${BENCHMARK_NAME}_gem5 PRIVATE ${CMAKE_PROJECT_NAME}_gem5 reference_gem5 riscv_baremetal_runtime)
+add_compile_definitions(USE_GEM5_M5)
 
-    target_include_directories(${BENCHMARK_NAME}_gem5 PRIVATE
-      ${CMAKE_CURRENT_SOURCE_DIR}/include)
+add_executable(rgb_benchmark
+    main_benchmark.cpp
+    ${SCALAR_DIR}/rgb_to_gray_scalar.c
+    ${VECTOR_DIR}/rgb_to_gray_vector.c
+    ${GEM5_DIR}/util/m5/src/riscv/m5op.S
+)
 
-    # Benchmarks are not gtest programs; they print "Output is correct." on success and "Output is wrong!" on failure.
-    set_target_properties(${BENCHMARK_NAME}_gem5 PROPERTIES
-      RISCV_GEM5_PASS_REGEX "Output is correct\\."
-      RISCV_GEM5_FAIL_REGEX "Output is wrong")
-    riscv_add_gem5_run(${BENCHMARK_NAME}_gem5)
-
-    riscv_add_linux_executable(${BENCHMARK_SOURCE})
-    target_link_libraries(${BENCHMARK_NAME}_qemu PRIVATE ${CMAKE_PROJECT_NAME}_qemu reference_qemu)
-
-    target_include_directories(${BENCHMARK_NAME}_qemu PRIVATE
-      ${CMAKE_CURRENT_SOURCE_DIR}/include)
-
-    riscv_add_qemu_run(${BENCHMARK_NAME}_qemu)
-endforeach()
+target_include_directories(rgb_benchmark PRIVATE
+    ${SCALAR_DIR}
+    ${VECTOR_DIR}
+    ${GEM5_DIR}/include
+)

@@ -1,0 +1,90 @@
+#include <iostream>
+#include <vector>
+#include <string>
+#include <cstdint>
+#include <memory>
+
+// تضمين مكتبة gem5
+#ifdef USE_GEM5_M5
+extern "C" {
+    #include <gem5/m5ops.h>
+}
+#else
+    #define m5_reset_stats(a, b)
+    #define m5_dump_stats(a, b)
+#endif
+
+// ربط دوال الـ Scalar والـ Vector (C-linkage)
+extern "C" {
+    #include "rgb_to_gray_scalar.h"
+    #include "rgb_to_gray_vector.h"
+}
+
+#ifdef HAVE_OPENCV
+    #include <opencv2/opencv.hpp>
+#endif
+
+// خوارزمية OpenCV الحسابية كمرجع (Fixed-point 14-bit)
+void rgb_to_gray_opencv_sim(const uint8_t* rgb, uint8_t* gray, size_t num_pixels) {
+    for (size_t i = 0; i < num_pixels; ++i) {
+        uint32_t r = rgb[3 * i + 0];
+        uint32_t g = rgb[3 * i + 1];
+        uint32_t b = rgb[3 * i + 2];
+        gray[i] = static_cast<uint8_t>((r * 4899 + g * 9617 + b * 1868 + 8192) >> 14);
+    }
+}
+
+int main(int argc, char* argv[]) {
+    size_t width  = 640;
+    size_t height = 480;
+    std::string mode = "vector"; // خيارات: "scalar", "vector", "opencv"
+
+    if (argc >= 3) {
+        width  = std::stoul(argv[1]);
+        height = std::stoul(argv[2]);
+    }
+    if (argc >= 4) {
+        mode = argv[3];
+    }
+
+    const size_t num_pixels = width * height;
+    std::vector<uint8_t> rgb_data(num_pixels * 3);
+    std::vector<uint8_t> gray_data(num_pixels, 0);
+
+    // ملء بيانات الـ RGB كعينة اختبارية
+    for (size_t i = 0; i < rgb_data.size(); ++i) {
+        rgb_data[i] = static_cast<uint8_t>(i % 256);
+    }
+
+    std::cout << "[Benchmark] Resolution: " << width << "x" << height 
+              << " | Target Mode: " << mode << std::endl;
+
+    // تصفير إحصائيات gem5 قبل تنفيذ الـ Kernel
+    m5_reset_stats(0, 0);
+
+    if (mode == "scalar") {
+        rgb_to_gray_scalar(rgb_data.data(), gray_data.data(), width, height);
+    } 
+    else if (mode == "vector") {
+        rgb_to_gray_vector(rgb_data.data(), gray_data.data(), width, height);
+    } 
+    else if (mode == "opencv") {
+#ifdef HAVE_OPENCV
+        cv::Mat src(static_cast<int>(height), static_cast<int>(width), CV_8UC3, rgb_data.data());
+        cv::Mat dst(static_cast<int>(height), static_cast<int>(width), CV_8UC1, gray_data.data());
+        cv::cvtColor(src, dst, cv::COLOR_RGB2GRAY);
+#else
+        rgb_to_gray_opencv_sim(rgb_data.data(), gray_data.data(), num_pixels);
+#endif
+    } 
+    else {
+        std::cerr << "Unknown mode: " << mode << std::endl;
+        return 1;
+    }
+
+    // تفريغ الإحصائيات بعد انتهاء الـ Kernel
+    m5_dump_stats(0, 0);
+
+    std::cout << "[Benchmark] Execution finished successfully." << std::endl;
+    return 0;
+}

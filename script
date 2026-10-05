@@ -1,0 +1,41 @@
+make ARCH=riscv64-xs LINUX_GNU_TOOLCHAIN=1 MARCH=rv64gcv
+
+#####################################################################
+
+./build/RISCV/gem5.opt \
+    -d "m5out_rgb_scalar" \
+    ./configs/example/kmhv3.py \
+    --mem-size=2GB \
+    --enable-riscv-vector \
+    --disable-difftest \
+    --raw-cpt \
+    --generic-rv-cpt=$HOME/projects/RISCV_Academy/test/reference/build/rgb_scalar-riscv64-xs.bin
+
+
+cd ~/projects/RISCV_Academy/lib/
+make ARCH=riscv64-xs LINUX_GNU_TOOLCHAIN=1 MARCH=rv64gcv
+
+cd ~/gem5
+./build/RISCV/gem5.opt \
+    -d "m5out_rgb_vector" \
+    ./configs/example/kmhv3.py \
+    --mem-size=2GB \
+    --enable-riscv-vector \
+    --disable-difftest \
+    --raw-cpt \
+    --generic-rv-cpt=$HOME/projects/RISCV_Academy/lib/build/rgb_vector-riscv64-xs.bin
+==============================================
+
+cd ../projects/RISCV_Academy/benchmark/
+make clean
+make ARCH=riscv64-xs LINUX_GNU_TOOLCHAIN=1 MARCH=rv64gcv
+cd ~/gem5
+./build/RISCV/gem5.opt \
+    -d "m5out_rgb_benchmark" \
+    ./configs/example/kmhv3.py \
+    --mem-size=2GB \
+    --enable-riscv-vector \
+    --disable-difftest \
+    --raw-cpt \
+    --generic-rv-cpt=$HOME/projects/RISCV_Academy/benchmark/build/rgb_benchmark-riscv64-xs.bin
+
