@@ -54,6 +54,7 @@ set(QEMU_BINARY "${QEMU_BINARY}" CACHE FILEPATH "qemu-riscv64 user-mode emulator
 # max is required so QEMU enables the XiangShan bitmanip/crypto extensions in RISCV_MARCH; rv64,v=true faults with illegal instruction.
 set(QEMU_CPU "max,vlen=128"
     CACHE STRING "QEMU -cpu (max enables RVV + bitmanip/crypto used by RISCV_MARCH)")
+
 set(QEMU_EXTRA_ARGS "" CACHE STRING "Extra qemu-riscv64 arguments")
 
 # RISC-V cross toolchain.
