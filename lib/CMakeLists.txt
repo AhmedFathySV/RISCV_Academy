@@ -36,3 +36,12 @@ target_compile_options(${CMAKE_PROJECT_NAME}_qemu PRIVATE
   -fno-freestanding -fbuiltin)
 
 target_compile_definitions(${CMAKE_PROJECT_NAME}_qemu PUBLIC RISCV_QEMU)
+
+# Add the RGBtoGray example executable
+add_executable(RGBtoGray_example source/RGBtoGray_example.cpp)
+
+# Link it to the main library (check the file to see what the library is named, usually 'riscv_cv' or similar)
+target_link_libraries(RGBtoGray_example PRIVATE riscv_cv)
+
+#histogram
+

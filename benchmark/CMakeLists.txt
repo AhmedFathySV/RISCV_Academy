@@ -29,3 +29,25 @@ foreach(BENCHMARK_SOURCE ${BENCHMARK_SOURCES})
 
     riscv_add_qemu_run(${BENCHMARK_NAME}_qemu)
 endforeach()
+
+set(VECTOR_HIST_DIR "${CMAKE_CURRENT_SOURCE_DIR}/vectorHist")
+
+riscv_add_baremetal_image("${VECTOR_HIST_DIR}/main.cpp")
+target_sources(main_gem5 PRIVATE
+  "${VECTOR_HIST_DIR}/hist_scalar.cpp"
+  "${VECTOR_HIST_DIR}/hist_vector.cpp")
+target_include_directories(main_gem5 PRIVATE
+  "${NEXUS_AM_HOME}/libs/klib/include")
+target_link_libraries(main_gem5 PRIVATE ${CMAKE_PROJECT_NAME}_gem5 riscv_baremetal_runtime)
+set_target_properties(main_gem5 PROPERTIES
+  OUTPUT_NAME "vector_hist.elf"
+  RISCV_GEM5_PASS_REGEX "SUCCESS: Strategy 2 matches scalar perfectly!"
+  RISCV_GEM5_FAIL_REGEX "Mismatch at bin")
+riscv_add_gem5_run(main_gem5)
+
+riscv_add_linux_executable("${VECTOR_HIST_DIR}/main.cpp")
+target_sources(main_qemu PRIVATE
+  "${VECTOR_HIST_DIR}/hist_scalar.cpp"
+  "${VECTOR_HIST_DIR}/hist_vector.cpp")
+set_target_properties(main_qemu PROPERTIES OUTPUT_NAME "vector_hist_qemu.elf")
+riscv_add_qemu_run(main_qemu)

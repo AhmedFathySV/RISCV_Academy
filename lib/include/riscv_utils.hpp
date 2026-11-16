@@ -70,6 +70,19 @@ public:
         }
     }
 
+    void ImageRandomInitialize(Image<T, ImageType::RGB>& image)
+    {
+        for (int y = 0; y < image.Height(); y++)
+        {
+            for (int x = 0; x < image.Width(); x++)
+            {
+                image.SetPixel(x, y, get(), 0);
+                image.SetPixel(x, y, get(), 1);
+                image.SetPixel(x, y, get(), 2);
+            }
+        }
+    }
+
 private:
     int min_;
     int span_;

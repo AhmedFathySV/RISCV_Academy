@@ -1,0 +1,18 @@
+=== Histogram Benchmark Analysis ===
+
+=== Cycle & Instruction Counts ===
+Variant                        Ticks           Insts
+-------                        -----           -----
+scalar-constant           4922331408        16972372
+vector-constant             12948705          100011
+scalar-uniform            2653216128        23099947
+vector-uniform              12836484          100005
+scalar-zipf               2695558743        26769996
+vector-zipf                 12950037          100012
+
+=== Speedup Calculations ===
+(Speedup = Scalar Ticks / Vector Ticks)
+
+Constant speedup:   380.14x
+Uniform speedup:    206.69x
+Zipf speedup:       208.15x

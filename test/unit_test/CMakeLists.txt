@@ -17,7 +17,8 @@ file(GLOB TEST_CASE_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/source/*_test.cpp)
 function(unit_test_includes target)
   target_include_directories(${target} PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/../framework/include
-    ${CMAKE_CURRENT_SOURCE_DIR}/include)
+    ${CMAKE_CURRENT_SOURCE_DIR}/include
+    ${CMAKE_SOURCE_DIR}/images)
 endfunction()
 
 # ---- aggregate: all test cases in one binary --------------------------------
