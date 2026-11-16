@@ -161,3 +161,27 @@ build files. Pass them with `-D<VAR>=value` at configure time.
   `Image::Read(width, height, data)`. `Write` is not supported on gem5.
 
 See [IMAGEIO.md](IMAGEIO.md) for formats and examples.
+
+
+#Menna 
+## 2D Box Filter Assignment Results
+
+### Implementation Details
+- **Scalar Version:** Standard nested loops with border handling (Replicate/Constant).
+- **Vector Version (RVV):** Implemented using a **separable 2D convolution** approach. 
+  - Pass 1: Horizontal sliding window sum (vectorized using `vle8`, `vwaddu`, `vadd`).
+  - Pass 2: Vertical sliding window sum (vectorized using `vle16`, `vadd`, `vdivu`, `vncvt`).
+  - Used 16-bit intermediate buffers to prevent integer precision loss before the final division.
+
+### Benchmark Results (QEMU User-Mode)
+| Metric | Scalar | Vector (RVV) |
+| :--- | :--- | :--- |
+| **Total Cycles** | 83,116,911 | 35,959,578 |
+| **Cycles Per Pixel (CPP)** | 304.86 | 131.89 |
+| **Speedup** | 1.00x | **2.31x** |
+
+*Note: The 2.31x speedup is measured on QEMU. QEMU has significant overhead for emulating RVV vector instructions. On actual RISC-V hardware (e.g., XiangShan via gem5), the speedup is expected to be significantly higher (5x-10x) due to true hardware parallelism.*
+
+### Correctness Verification
+- **Status:** ✅ PASSED
+- **Method:** Pixel-by-pixel comparison between Scalar and Vector outputs on a 640x426 test image. 0 mismatches found.

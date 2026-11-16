@@ -129,6 +129,10 @@ enable_testing()
 add_subdirectory(test)
 add_subdirectory(benchmark)
 
+# Add your assignment folders here
+#add_subdirectory(median_filter) # If you have this folder
+add_subdirectory(box_filter)    # <-- ADDED: The new 2D Box Filter task
+
 message(STATUS "")
 message(STATUS "RISC-V-CV configuration:")
 message(STATUS "  NEXUS_AM_HOME   = ${NEXUS_AM_HOME}")
